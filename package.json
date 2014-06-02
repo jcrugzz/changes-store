@@ -1,6 +1,6 @@
 {
   "name": "changes-store",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Simple in memory store that is automatically invalidated by a changes feed",
   "main": "index.js",
   "scripts": {
