@@ -1,0 +1,22 @@
+{
+  "name": "changes-store",
+  "version": "0.0.0",
+  "description": "Simple in memory store that is automatically invalidated by a changes feed",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "changes",
+    "cache",
+    "store",
+    "invalidate"
+  ],
+  "author": "Jarrett Cruger <jcrugzz@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "changes-stream": "^1.0.5",
+    "http-https": "^1.0.0",
+    "parse-json-response": "^1.0.1"
+  }
+}
