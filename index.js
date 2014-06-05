@@ -29,7 +29,7 @@ function Store (options) {
     throw new Error('A database is required guys');
   }
 
-  this.stream = options.stream || new PassThrough();
+  this.stream = options.stream || new PassThrough({ objectMode: true, highWaterMark: 16 });
   this.view = options.view;
   // Only cache a specific key of the documents if specified
   this.key = options.key;
