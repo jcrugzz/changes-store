@@ -6,6 +6,8 @@ var Changes = require('changes-stream');
 var http = require('http-https');
 var parse = require('parse-json-response');
 
+var slice = Array.prototype.slice;
+
 module.exports = Store;
 
 util.inherits(Store, EE);
@@ -31,7 +33,8 @@ function Store (options) {
   this.view = options.view;
   // Only cache a specific key of the documents if specified
   this.key = options.key;
-  this.index = undefined;
+  this._index = undefined;
+  this.indicies = [];
 
   this.fetch();
 }
@@ -59,13 +62,14 @@ Store.prototype.preload = function (err, data, res) {
   if (err) {
     return this.emit('error', err);
   }
-  this.index = data.rows
+
+  this._index = data.rows
     .map(function (r) { return r.doc })
     .filter(function (doc) {
       return !/^_design/.test(doc._id);
     })
     .reduce(function (acc, doc) {
-      acc[doc._id] = this.key ? doc[this.key] : doc;
+      acc[doc._id] = doc;
       return acc;
     }.bind(this), {})
 
@@ -73,10 +77,37 @@ Store.prototype.preload = function (err, data, res) {
     this.listen(data.update_seq);
 };
 
+Store.prototype.keys = function (idx) {
+  return Object.keys(this._index);
+};
+
+// Index a particular key and create its own Getter function
+Store.prototype.index = function (idx) {
+  if (!~this.indicies.indexOf(idx)) {
+    if (this[idx]) {
+      return this.emit('error', new Error('Cannot override internal function/object'));
+    }
+    this.indicies.push(idx);
+    this[idx] = this.getter(idx);
+  }
+  return this;
+};
+
 Store.prototype.get = function(key) {
-  if (!name) return undefined;
-  return this.index[key];
-}
+  if (!key) return undefined;
+  return this._index[key]
+};
+
+//
+// Create simple getters for particular keys that we set with `index`
+//
+Store.prototype.getter = function (index) {
+  var self = this;
+  return function (key) {
+    if (!key) return undefined;
+    return self._index[key][index];
+  };
+};
 
 Store.prototype.listen = function (since) {
   this.changes = new Changes({
@@ -96,6 +127,6 @@ Store.prototype.listen = function (since) {
 };
 
 Store.prototype.invalidate = function (change) {
-  this.emit('invalidate', change);
-  this.index[change.id] = this.key ? change.doc[this.key] : change.doc;
+  this.emit('invalidate', change.doc);
+  this._index[change.id] = change.doc;
 };
