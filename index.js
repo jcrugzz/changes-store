@@ -104,8 +104,8 @@ Store.prototype.get = function(key) {
 Store.prototype.getter = function (index) {
   var self = this;
   return function (key) {
-    if (!key || key && !self.index[key]) return undefined;
-    return self._index[key][index];
+    if (!key) return undefined;
+    return (self._index[key] || {})[index];
   };
 };
 
